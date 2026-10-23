@@ -14,7 +14,7 @@
         <div class="auth-header">
             <div class="auth-logo">☁️</div>
             <h1 class="auth-title">CloudAttend</h1>
-            <p class="auth-subtitle">EWB Edu Tech — AWS Internship Project</p>
+            <p class="auth-subtitle">Cloud-Based Student Attendance Management System</p>
         </div>
 
         <!-- Flash messages -->
@@ -42,6 +42,7 @@
                     name="username" 
                     class="form-control" 
                     placeholder="e.g. admin" 
+                    value="admin"
                     required 
                     autofocus
                     autocomplete="username"
@@ -56,21 +57,16 @@
                     name="password" 
                     class="form-control" 
                     placeholder="••••••••••••" 
+                    value="Admin@Cloud2026"
                     required
                     autocomplete="current-password"
                 >
             </div>
 
             <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; margin-top: 0.5rem;">
-                Secure Sign In
+                Sign In
             </button>
         </form>
-
-        <div class="demo-credentials-box">
-            <strong>🔑 Demo Internship Credentials:</strong><br>
-            Username: <code style="color: #2563eb; font-weight: 600;">admin</code><br>
-            Password: <code style="color: #2563eb; font-weight: 600;">Admin@Cloud2026</code>
-        </div>
     </div>
 
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>

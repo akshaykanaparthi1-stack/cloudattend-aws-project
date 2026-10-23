@@ -75,8 +75,8 @@ def seed_db(db_conn=None):
     # 1. Seed Administrator
     admin_user = current_app.config.get("DEFAULT_ADMIN_USER", "admin")
     admin_pass = current_app.config.get("DEFAULT_ADMIN_PASS", "Admin@Cloud2026")
-    admin_name = current_app.config.get("DEFAULT_ADMIN_NAME", "Internship Admin")
-    admin_email = current_app.config.get("DEFAULT_ADMIN_EMAIL", "admin@ewb.internal")
+    admin_name = current_app.config.get("DEFAULT_ADMIN_NAME", "System Administrator")
+    admin_email = current_app.config.get("DEFAULT_ADMIN_EMAIL", "admin@cloudattend.internal")
 
     existing_admin = db.execute(
         "SELECT id FROM users WHERE username = ?", (admin_user,)
@@ -99,30 +99,30 @@ def seed_db(db_conn=None):
     # 2. Seed Fictional Students
     fictional_students = [
         # AWS Cloud Foundations - Section A
-        ("STU-1001", "Alex Chen", "AWS Cloud Foundations", "Section A", "alex.chen.demo@ewb.test"),
-        ("STU-1002", "Jordan Taylor", "AWS Cloud Foundations", "Section A", "jordan.taylor.demo@ewb.test"),
-        ("STU-1003", "Samira Khan", "AWS Cloud Foundations", "Section A", "samira.khan.demo@ewb.test"),
-        ("STU-1004", "Marcus Vance", "AWS Cloud Foundations", "Section A", "marcus.vance.demo@ewb.test"),
-        ("STU-1005", "Elena Rostova", "AWS Cloud Foundations", "Section A", "elena.rostova.demo@ewb.test"),
+        ("STU-1001", "Alex Chen", "AWS Cloud Foundations", "Section A", "alex.chen.demo@cloudattend.test"),
+        ("STU-1002", "Jordan Taylor", "AWS Cloud Foundations", "Section A", "jordan.taylor.demo@cloudattend.test"),
+        ("STU-1003", "Samira Khan", "AWS Cloud Foundations", "Section A", "samira.khan.demo@cloudattend.test"),
+        ("STU-1004", "Marcus Vance", "AWS Cloud Foundations", "Section A", "marcus.vance.demo@cloudattend.test"),
+        ("STU-1005", "Elena Rostova", "AWS Cloud Foundations", "Section A", "elena.rostova.demo@cloudattend.test"),
 
         # AWS Cloud Foundations - Section B
-        ("STU-1006", "Devon Miller", "AWS Cloud Foundations", "Section B", "devon.miller.demo@ewb.test"),
-        ("STU-1007", "Priya Patel", "AWS Cloud Foundations", "Section B", "priya.patel.demo@ewb.test"),
-        ("STU-1008", "Liam O'Connor", "AWS Cloud Foundations", "Section B", "liam.oconnor.demo@ewb.test"),
-        ("STU-1009", "Zara Morales", "AWS Cloud Foundations", "Section B", "zara.morales.demo@ewb.test"),
-        ("STU-1010", "Kevin Zhang", "AWS Cloud Foundations", "Section B", "kevin.zhang.demo@ewb.test"),
+        ("STU-1006", "Devon Miller", "AWS Cloud Foundations", "Section B", "devon.miller.demo@cloudattend.test"),
+        ("STU-1007", "Priya Patel", "AWS Cloud Foundations", "Section B", "priya.patel.demo@cloudattend.test"),
+        ("STU-1008", "Liam O'Connor", "AWS Cloud Foundations", "Section B", "liam.oconnor.demo@cloudattend.test"),
+        ("STU-1009", "Zara Morales", "AWS Cloud Foundations", "Section B", "zara.morales.demo@cloudattend.test"),
+        ("STU-1010", "Kevin Zhang", "AWS Cloud Foundations", "Section B", "kevin.zhang.demo@cloudattend.test"),
 
         # DevOps & SysOps - Section A
-        ("STU-2001", "Amina Bello", "DevOps & SysOps", "Section A", "amina.bello.demo@ewb.test"),
-        ("STU-2002", "Noah Lindqvist", "DevOps & SysOps", "Section A", "noah.l.demo@ewb.test"),
-        ("STU-2003", "Chloe Dubois", "DevOps & SysOps", "Section A", "chloe.d.demo@ewb.test"),
-        ("STU-2004", "Rohan Gupta", "DevOps & SysOps", "Section A", "rohan.g.demo@ewb.test"),
-        ("STU-2005", "Maya Takahashi", "DevOps & SysOps", "Section A", "maya.t.demo@ewb.test"),
+        ("STU-2001", "Amina Bello", "DevOps & SysOps", "Section A", "amina.bello.demo@cloudattend.test"),
+        ("STU-2002", "Noah Lindqvist", "DevOps & SysOps", "Section A", "noah.l.demo@cloudattend.test"),
+        ("STU-2003", "Chloe Dubois", "DevOps & SysOps", "Section A", "chloe.d.demo@cloudattend.test"),
+        ("STU-2004", "Rohan Gupta", "DevOps & SysOps", "Section A", "rohan.g.demo@cloudattend.test"),
+        ("STU-2005", "Maya Takahashi", "DevOps & SysOps", "Section A", "maya.t.demo@cloudattend.test"),
 
         # Cloud Security & Architecture - Section A
-        ("STU-3001", "Gabriel Santos", "Cloud Security & Architecture", "Section A", "gabriel.s.demo@ewb.test"),
-        ("STU-3002", "Fatima Al-Hassan", "Cloud Security & Architecture", "Section A", "fatima.a.demo@ewb.test"),
-        ("STU-3003", "Lucas Meyer", "Cloud Security & Architecture", "Section A", "lucas.m.demo@ewb.test"),
+        ("STU-3001", "Gabriel Santos", "Cloud Security & Architecture", "Section A", "gabriel.s.demo@cloudattend.test"),
+        ("STU-3002", "Fatima Al-Hassan", "Cloud Security & Architecture", "Section A", "fatima.a.demo@cloudattend.test"),
+        ("STU-3003", "Lucas Meyer", "Cloud Security & Architecture", "Section A", "lucas.m.demo@cloudattend.test"),
     ]
 
     student_id_map = {}

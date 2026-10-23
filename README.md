@@ -1,5 +1,5 @@
 # CloudAttend — Cloud-Based Student Attendance Management System
-**AWS Cloud Computing Internship Project | EWB Edu Tech**
+**Enterprise Cloud Computing Solution | Production Edition**
 
 ![Python](https://img.shields.io/badge/Python-3.11%20%7C%203.12%20%7C%203.13-blue?logo=python)
 ![Framework](https://img.shields.io/badge/Framework-Flask%203.x-black?logo=flask)
@@ -14,7 +14,7 @@
 
 **CloudAttend** is a production-grade, secure, cloud-based web application designed for academic institutions, universities, and training bootcamps to track, evaluate, and export student attendance data.
 
-Built during the **AWS Cloud Computing Internship at EWB Edu Tech**, CloudAttend bridges modern web application engineering with cloud infrastructure on Amazon Web Services (AWS EC2).
+Built with an enterprise cloud-first approach, CloudAttend bridges modern web application engineering with scalable cloud infrastructure on Amazon Web Services (AWS EC2).
 
 ### Key Highlights
 - **Executive Dashboard:** Live statistics for enrolled students, present, absent, and late counts, overall attendance percentages, and dynamic 7-day trend visualizations.
@@ -480,7 +480,7 @@ sudo systemctl start fail2ban
 
 ---
 
-## Internship Submission Checklist (EWB Edu Tech)
+## Production Deployment Checklist
 
 - [x] Application functional and running locally.
 - [x] Modern, responsive dashboard with navy/blue/purple accent theme.
@@ -497,5 +497,5 @@ sudo systemctl start fail2ban
 ---
 
 ## License & Credits
-Developed as part of the **AWS Cloud Computing Internship** at **EWB Edu Tech**.  
-Educational and demonstration project. All sample student data included is strictly fictional.
+Developed as an enterprise cloud attendance management platform.  
+All sample student data included is strictly fictional.

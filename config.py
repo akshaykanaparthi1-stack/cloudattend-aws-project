@@ -28,8 +28,8 @@ class Config:
     # Default admin credentials for initial seed
     DEFAULT_ADMIN_USER = os.environ.get("DEFAULT_ADMIN_USER", "admin")
     DEFAULT_ADMIN_PASS = os.environ.get("DEFAULT_ADMIN_PASS", "Admin@Cloud2026")
-    DEFAULT_ADMIN_NAME = os.environ.get("DEFAULT_ADMIN_NAME", "Internship Admin")
-    DEFAULT_ADMIN_EMAIL = os.environ.get("DEFAULT_ADMIN_EMAIL", "admin@ewb.internal")
+    DEFAULT_ADMIN_NAME = os.environ.get("DEFAULT_ADMIN_NAME", "System Administrator")
+    DEFAULT_ADMIN_EMAIL = os.environ.get("DEFAULT_ADMIN_EMAIL", "admin@cloudattend.internal")
     
     TESTING = False
     DEBUG = False
