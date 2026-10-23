@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+
+{% block title %}Attendance Reports{% endblock %}
+{% block topbar_title %}Attendance Reports & Analytics{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Attendance Reports & Logs</h1>
+        <p class="page-subtitle">Filter by date, month, cohort, student, and status with instant CSV export</p>
+    </div>
+    <div>
+        <a href="{{ url_for('export_csv', type=filter_type, date=selected_date, month=selected_month, class_name=selected_class, section=selected_section, status=selected_status, student_query=search_student) }}" class="btn btn-primary">
+            <span>📥 Export CSV</span>
+        </a>
+    </div>
+</div>
+
+<!-- Filter Toolbar -->
+<div class="filter-bar">
+    <form method="GET" action="{{ url_for('reports') }}">
+        <div style="display: flex; gap: 1rem; margin-bottom: 1rem; border-bottom: 1px solid var(--color-border); padding-bottom: 0.75rem;">
+            <label style="display: flex; align-items: center; gap: 0.35rem; font-size: 0.85rem; font-weight: 600; cursor: pointer;">
+                <input type="radio" name="type" value="daily" {% if filter_type == 'daily' %}checked{% endif %} onchange="this.form.submit()">
+                Daily Report
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.35rem; font-size: 0.85rem; font-weight: 600; cursor: pointer;">
+                <input type="radio" name="type" value="monthly" {% if filter_type == 'monthly' %}checked{% endif %} onchange="this.form.submit()">
+                Monthly Report
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.35rem; font-size: 0.85rem; font-weight: 600; cursor: pointer;">
+                <input type="radio" name="type" value="all" {% if filter_type == 'all' %}checked{% endif %} onchange="this.form.submit()">
+                All Historical
+            </label>
+        </div>
+
+        <div class="filter-grid">
+            {% if filter_type == 'daily' %}
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">Report Date</label>
+                    <input type="date" name="date" value="{{ selected_date }}" class="form-control">
+                </div>
+            {% elif filter_type == 'monthly' %}
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">Report Month</label>
+                    <input type="month" name="month" value="{{ selected_month }}" class="form-control">
+                </div>
+            {% endif %}
+
+            <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label">Class / Cohort</label>
+                <select name="class_name" class="form-select">
+                    <option value="">All Classes</option>
+                    {% for c in classes %}
+                        <option value="{{ c }}" {% if selected_class == c %}selected{% endif %}>{{ c }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label">Section</label>
+                <select name="section" class="form-select">
+                    <option value="">All Sections</option>
+                    {% for s in sections %}
+                        <option value="{{ s }}" {% if selected_section == s %}selected{% endif %}>{{ s }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label">Status</label>
+                <select name="status" class="form-select">
+                    <option value="">All Statuses</option>
+                    <option value="Present" {% if selected_status == 'Present' %}selected{% endif %}>Present Only</option>
+                    <option value="Absent" {% if selected_status == 'Absent' %}selected{% endif %}>Absent Only</option>
+                    <option value="Late" {% if selected_status == 'Late' %}selected{% endif %}>Late Only</option>
+                </select>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label">Student Name / ID</label>
+                <input type="text" name="student_query" value="{{ search_student }}" class="form-control" placeholder="Search student...">
+            </div>
+
+            <div style="display: flex; gap: 0.5rem;">
+                <button type="submit" class="btn btn-primary" style="flex: 1;">Apply</button>
+                <a href="{{ url_for('reports') }}" class="btn btn-secondary">Reset</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Filter Summary Metrics -->
+<div class="stats-grid">
+    <div class="stat-card primary">
+        <div class="stat-content">
+            <span class="stat-label">Filtered Records</span>
+            <div class="stat-value">{{ total_records }}</div>
+            <span class="stat-desc">Matching entries</span>
+        </div>
+        <div class="stat-icon">📑</div>
+    </div>
+
+    <div class="stat-card success">
+        <div class="stat-content">
+            <span class="stat-label">Present</span>
+            <div class="stat-value">{{ present_count }}</div>
+            <span class="stat-desc">Attended sessions</span>
+        </div>
+        <div class="stat-icon">✅</div>
+    </div>
+
+    <div class="stat-card danger">
+        <div class="stat-content">
+            <span class="stat-label">Absent</span>
+            <div class="stat-value">{{ absent_count }}</div>
+            <span class="stat-desc">Missed sessions</span>
+        </div>
+        <div class="stat-icon">❌</div>
+    </div>
+
+    <div class="stat-card warning">
+        <div class="stat-content">
+            <span class="stat-label">Late</span>
+            <div class="stat-value">{{ late_count }}</div>
+            <span class="stat-desc">Delayed attendance</span>
+        </div>
+        <div class="stat-icon">⏰</div>
+    </div>
+
+    <div class="stat-card purple">
+        <div class="stat-content">
+            <span class="stat-label">Attendance Rate</span>
+            <div class="stat-value">{{ attendance_percentage }}%</div>
+            <span class="stat-desc">
+                {% if total_records > 0 %}
+                    Calculated accurately
+                {% else %}
+                    No records in filter
+                {% endif %}
+            </span>
+        </div>
+        <div class="stat-icon">📊</div>
+    </div>
+</div>
+
+<!-- Report Table -->
+<div class="card">
+    <div class="card-header">
+        <div>
+            <h2 class="card-title">Attendance Log Records ({{ total_records }})</h2>
+            <span class="card-subtitle">
+                {% if filter_type == 'daily' %}
+                    Showing daily report for <strong>{{ selected_date }}</strong>
+                {% elif filter_type == 'monthly' %}
+                    Showing monthly report for <strong>{{ selected_month }}</strong>
+                {% else %}
+                    Showing all historical logs
+                {% endif %}
+            </span>
+        </div>
+        <div>
+            <a href="{{ url_for('export_csv', type=filter_type, date=selected_date, month=selected_month, class_name=selected_class, section=selected_section, status=selected_status, student_query=search_student) }}" class="btn btn-sm btn-secondary">
+                CSV Download
+            </a>
+        </div>
+    </div>
+
+    <div class="card-body" style="padding: 0;">
+        {% if records and records|length > 0 %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Student ID</th>
+                            <th>Student Name</th>
+                            <th>Class / Cohort</th>
+                            <th>Section</th>
+                            <th>Status</th>
+                            <th>Notes</th>
+                            <th>Recorded Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in records %}
+                            <tr>
+                                <td><strong>{{ r.attendance_date }}</strong></td>
+                                <td>
+                                    <strong style="color: var(--color-blue-primary);">{{ r.student_id }}</strong>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('view_student', id=r.student_db_id) }}" style="font-weight: 600;">
+                                        {{ r.student_name }}
+                                    </a>
+                                </td>
+                                <td>{{ r.class_name }}</td>
+                                <td><span class="badge badge-inactive">{{ r.section }}</span></td>
+                                <td>
+                                    {% if r.status == 'Present' %}
+                                        <span class="badge badge-present">Present</span>
+                                    {% elif r.status == 'Absent' %}
+                                        <span class="badge badge-absent">Absent</span>
+                                    {% else %}
+                                        <span class="badge badge-late">Late</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ r.notes or '—' }}</td>
+                                <td style="font-size: 0.78rem; color: #64748b;">{{ r.created_at }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">📋</div>
+                <h3 class="empty-state-title">No Records Found</h3>
+                <p class="empty-state-text">No attendance records match the selected date or filter criteria. Try adjusting your filters or record attendance for this date.</p>
+                <div style="display: flex; gap: 0.5rem; justify-content: center;">
+                    <a href="{{ url_for('reports') }}" class="btn btn-secondary">Reset Filters</a>
+                    <a href="{{ url_for('mark_attendance') }}" class="btn btn-primary">Take Attendance</a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}System & AWS Architecture{% endblock %}
+{% block topbar_title %}Cloud Architecture & Environment{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">System & Cloud Architecture</h1>
+        <p class="page-subtitle">Underlying infrastructure, database metrics, and AWS EC2 deployment profile</p>
+    </div>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card primary">
+        <div class="stat-content">
+            <span class="stat-label">SQLite Engine</span>
+            <div class="stat-value" style="font-size: 1.5rem;">v{{ sqlite_version }}</div>
+            <span class="stat-desc">Zero-config relational database</span>
+        </div>
+        <div class="stat-icon">💾</div>
+    </div>
+
+    <div class="stat-card purple">
+        <div class="stat-content">
+            <span class="stat-label">Total Students</span>
+            <div class="stat-value">{{ total_students }}</div>
+            <span class="stat-desc">Enrolled student entities</span>
+        </div>
+        <div class="stat-icon">👥</div>
+    </div>
+
+    <div class="stat-card success">
+        <div class="stat-content">
+            <span class="stat-label">Attendance Logs</span>
+            <div class="stat-value">{{ total_attendance }}</div>
+            <span class="stat-desc">Historical session rows</span>
+        </div>
+        <div class="stat-icon">📑</div>
+    </div>
+
+    <div class="stat-card warning">
+        <div class="stat-content">
+            <span class="stat-label">Administrators</span>
+            <div class="stat-value">{{ total_users }}</div>
+            <span class="stat-desc">Hashed authentication records</span>
+        </div>
+        <div class="stat-icon">🛡️</div>
+    </div>
+</div>
+
+<div class="dashboard-grid">
+    <div class="left-col">
+        <!-- AWS Cloud Deployment Overview -->
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <h2 class="card-title">AWS EC2 Production Pipeline</h2>
+                    <span class="card-subtitle">Recommended architecture for Ubuntu 22.04 / 24.04 LTS</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div style="background-color: #0f172a; color: #f8fafc; padding: 1.25rem; border-radius: var(--radius-md); font-family: monospace; font-size: 0.85rem; line-height: 1.7; margin-bottom: 1.25rem;">
+                    [ Client Web Browser ]<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│ &nbsp;HTTP / HTTPS (Port 80 / 443)<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;▼<br>
+                    [ AWS Security Group ] (SSH restricted to admin IP, Web open to 0.0.0.0/0)<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;▼<br>
+                    [ Nginx Reverse Proxy ] (Static assets caching + SSL Termination)<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│ &nbsp;Local Proxy (127.0.0.1:8000)<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;▼<br>
+                    [ Gunicorn WSGI Server ] (3 Workers managed by systemd)<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;▼<br>
+                    [ Flask Application (Python 3.11+) ]<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;▼<br>
+                    [ Persistent SQLite Storage / Amazon RDS ]
+                </div>
+
+                <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem;">Database Storage Path:</h3>
+                <code style="background-color: #f1f5f9; padding: 0.4rem 0.6rem; border-radius: 4px; display: block; word-break: break-all; margin-bottom: 1rem;">
+                    {{ db_path }}
+                </code>
+                <p style="font-size: 0.85rem; color: #64748b;">
+                    In production deployments on AWS EC2, the database file is stored in a dedicated persistent directory (such as <code>/var/lib/cloudattend/</code> or persistent EBS volume) to ensure durability across application updates and service restarts.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="right-col">
+        <!-- Security Checklist Card -->
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <h2 class="card-title">Security Profile</h2>
+                    <span class="card-subtitle">Enforced protections</span>
+                </div>
+            </div>
+            <div class="card-body" style="font-size: 0.875rem;">
+                <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.75rem;">
+                    <li style="display: flex; align-items: flex-start; gap: 0.5rem;">
+                        <span style="color: #10b981; font-weight: 700;">✓</span>
+                        <div>
+                            <strong>PBKDF2 Password Hashing</strong>
+                            <div style="font-size: 0.75rem; color: #64748b;">Passwords are never stored in plaintext.</div>
+                        </div>
+                    </li>
+                    <li style="display: flex; align-items: flex-start; gap: 0.5rem;">
+                        <span style="color: #10b981; font-weight: 700;">✓</span>
+                        <div>
+                            <strong>Session-Based CSRF Protection</strong>
+                            <div style="font-size: 0.75rem; color: #64748b;">All state-changing POST requests require a verified token.</div>
+                        </div>
+                    </li>
+                    <li style="display: flex; align-items: flex-start; gap: 0.5rem;">
+                        <span style="color: #10b981; font-weight: 700;">✓</span>
+                        <div>
+                            <strong>Parameterized SQL Queries</strong>
+                            <div style="font-size: 0.75rem; color: #64748b;">Guards against SQL injection exploits.</div>
+                        </div>
+                    </li>
+                    <li style="display: flex; align-items: flex-start; gap: 0.5rem;">
+                        <span style="color: #10b981; font-weight: 700;">✓</span>
+                        <div>
+                            <strong>Secure Cookie Flags</strong>
+                            <div style="font-size: 0.75rem; color: #64748b;">HttpOnly and SameSite=Lax configured.</div>
+                        </div>
+                    </li>
+                    <li style="display: flex; align-items: flex-start; gap: 0.5rem;">
+                        <span style="color: #10b981; font-weight: 700;">✓</span>
+                        <div>
+                            <strong>Security Response Headers</strong>
+                            <div style="font-size: 0.75rem; color: #64748b;">X-Frame-Options, nosniff, and Referrer-Policy.</div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

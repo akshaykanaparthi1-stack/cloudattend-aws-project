@@ -1,0 +1,31 @@
+[Unit]
+Description=CloudAttend Gunicorn Daemon - Attendance Management System
+After=network.target
+
+[Service]
+# User and Group under which the application runs
+User=ubuntu
+Group=www-data
+
+# Path to the application root directory
+WorkingDirectory=/home/ubuntu/cloudattend
+
+# Environment variables
+Environment="PATH=/home/ubuntu/cloudattend/venv/bin"
+EnvironmentFile=/home/ubuntu/cloudattend/.env
+
+# Gunicorn execution command: 3 worker processes bound to local port 8000 (or unix socket)
+ExecStart=/home/ubuntu/cloudattend/venv/bin/gunicorn \
+    --workers 3 \
+    --bind 127.0.0.1:8000 \
+    --access-logfile /var/log/cloudattend/access.log \
+    --error-logfile /var/log/cloudattend/error.log \
+    --capture-output \
+    wsgi:app
+
+# Restart policy for automatic reboot and crash recovery
+Restart=always
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target

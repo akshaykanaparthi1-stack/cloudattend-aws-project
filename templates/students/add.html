@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Add New Student{% endblock %}
+{% block topbar_title %}Enroll New Student{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Add New Student</h1>
+        <p class="page-subtitle">Register a student into the attendance database</p>
+    </div>
+    <a href="{{ url_for('list_students') }}" class="btn btn-secondary">
+        <span>← Back to Students</span>
+    </a>
+</div>
+
+<div class="card" style="max-width: 680px; margin: 0 auto;">
+    <div class="card-header">
+        <h2 class="card-title">Student Registration Form</h2>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('add_student') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="student_id" class="form-label">Student ID / Roll No *</label>
+                    <input 
+                        type="text" 
+                        id="student_id" 
+                        name="student_id" 
+                        class="form-control" 
+                        placeholder="e.g. STU-1025" 
+                        value="{{ form_data.get('student_id', '') }}"
+                        required
+                        pattern="^[A-Za-z0-9\-_]{2,30}$"
+                        title="2-30 alphanumeric characters, hyphens or underscores"
+                    >
+                    <span class="form-hint">Must be unique across the institution.</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="name" class="form-label">Full Name *</label>
+                    <input 
+                        type="text" 
+                        id="name" 
+                        name="name" 
+                        class="form-control" 
+                        placeholder="e.g. Jordan Taylor" 
+                        value="{{ form_data.get('name', '') }}"
+                        required
+                        minlength="2"
+                        maxlength="100"
+                    >
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="class_name" class="form-label">Cohort / Class Name *</label>
+                    <input 
+                        type="text" 
+                        id="class_name" 
+                        name="class_name" 
+                        class="form-control" 
+                        list="classes_list" 
+                        placeholder="e.g. AWS Cloud Foundations" 
+                        value="{{ form_data.get('class_name', '') }}"
+                        required
+                    >
+                    <datalist id="classes_list">
+                        {% for c in classes %}
+                            <option value="{{ c }}">
+                        {% endfor %}
+                    </datalist>
+                    <span class="form-hint">Select an existing class or type a new one.</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="section" class="form-label">Section *</label>
+                    <input 
+                        type="text" 
+                        id="section" 
+                        name="section" 
+                        class="form-control" 
+                        placeholder="e.g. Section A" 
+                        value="{{ form_data.get('section', '') }}"
+                        required
+                    >
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="email" class="form-label">Email Address (Optional)</label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    name="email" 
+                    class="form-control" 
+                    placeholder="student.demo@ewb.test" 
+                    value="{{ form_data.get('email', '') }}"
+                >
+                <span class="form-hint">Used for student notifications and attendance alerts.</span>
+            </div>
+
+            <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem;">
+                <a href="{{ url_for('list_students') }}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">Save Student</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

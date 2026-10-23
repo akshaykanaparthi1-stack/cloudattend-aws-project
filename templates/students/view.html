@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}Dossier — {{ student.name }}{% endblock %}
+{% block topbar_title %}Student Dossier{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">{{ student.name }}</h1>
+        <p class="page-subtitle">{{ student.student_id }} • {{ student.class_name }} ({{ student.section }})</p>
+    </div>
+    <div style="display: flex; gap: 0.5rem;">
+        <a href="{{ url_for('edit_student', id=student.id) }}" class="btn btn-secondary">
+            ✏️ Edit Student
+        </a>
+        <a href="{{ url_for('list_students') }}" class="btn btn-secondary">
+            ← All Students
+        </a>
+    </div>
+</div>
+
+<!-- Personal Attendance Stats Cards -->
+<div class="stats-grid">
+    <div class="stat-card primary">
+        <div class="stat-content">
+            <span class="stat-label">Total Days Tracked</span>
+            <div class="stat-value">{{ total_days }}</div>
+            <span class="stat-desc">Sessions recorded</span>
+        </div>
+        <div class="stat-icon">📅</div>
+    </div>
+
+    <div class="stat-card success">
+        <div class="stat-content">
+            <span class="stat-label">Present</span>
+            <div class="stat-value">{{ present }}</div>
+            <span class="stat-desc">Full attendance</span>
+        </div>
+        <div class="stat-icon">✅</div>
+    </div>
+
+    <div class="stat-card danger">
+        <div class="stat-content">
+            <span class="stat-label">Absent</span>
+            <div class="stat-value">{{ absent }}</div>
+            <span class="stat-desc">Days missed</span>
+        </div>
+        <div class="stat-icon">❌</div>
+    </div>
+
+    <div class="stat-card warning">
+        <div class="stat-content">
+            <span class="stat-label">Late</span>
+            <div class="stat-value">{{ late }}</div>
+            <span class="stat-desc">Tardy arrivals</span>
+        </div>
+        <div class="stat-icon">⏰</div>
+    </div>
+
+    <div class="stat-card purple">
+        <div class="stat-content">
+            <span class="stat-label">Attendance Rate</span>
+            <div class="stat-value">{{ percentage }}%</div>
+            <span class="stat-desc">Present ratio</span>
+        </div>
+        <div class="stat-icon">🎯</div>
+    </div>
+</div>
+
+<!-- Student Full Attendance History -->
+<div class="card">
+    <div class="card-header">
+        <div>
+            <h2 class="card-title">Attendance History Logs</h2>
+            <span class="card-subtitle">Chronological record of all classroom sessions</span>
+        </div>
+    </div>
+    <div class="card-body" style="padding: 0;">
+        {% if history and history|length > 0 %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Notes / Remarks</th>
+                            <th>Recorded Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for h in history %}
+                            <tr>
+                                <td><strong>{{ h.attendance_date }}</strong></td>
+                                <td>
+                                    {% if h.status == 'Present' %}
+                                        <span class="badge badge-present">Present</span>
+                                    {% elif h.status == 'Absent' %}
+                                        <span class="badge badge-absent">Absent</span>
+                                    {% else %}
+                                        <span class="badge badge-late">Late</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ h.notes or '—' }}</td>
+                                <td style="color: #64748b; font-size: 0.8rem;">{{ h.created_at }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">📋</div>
+                <h3 class="empty-state-title">No Attendance Records Yet</h3>
+                <p class="empty-state-text">No attendance has been logged for this student yet.</p>
+                <a href="{{ url_for('mark_attendance', class_name=student.class_name, section=student.section) }}" class="btn btn-primary">
+                    Take Attendance Now
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

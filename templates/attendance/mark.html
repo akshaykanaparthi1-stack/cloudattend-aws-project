@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block title %}Mark Attendance{% endblock %}
+{% block topbar_title %}Session Attendance Recording{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Take Attendance</h1>
+        <p class="page-subtitle">Select date and class, then mark presence status for each enrolled student</p>
+    </div>
+</div>
+
+<!-- Step 1: Selection Header Filter -->
+<div class="filter-bar">
+    <form method="GET" action="{{ url_for('mark_attendance') }}" class="filter-grid">
+        <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Attendance Date *</label>
+            <input 
+                type="date" 
+                name="attendance_date" 
+                value="{{ selected_date }}" 
+                class="form-control" 
+                required
+            >
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Cohort / Class *</label>
+            <select name="class_name" class="form-select" required onchange="this.form.submit()">
+                <option value="">-- Select Class --</option>
+                {% for c in classes %}
+                    <option value="{{ c }}" {% if selected_class == c %}selected{% endif %}>{{ c }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Section (Optional)</label>
+            <select name="section" class="form-select" onchange="this.form.submit()">
+                <option value="">All Sections</option>
+                {% for s in sections %}
+                    <option value="{{ s }}" {% if selected_section == s %}selected{% endif %}>{{ s }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div>
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Load Students</button>
+        </div>
+    </form>
+</div>
+
+<!-- Step 2: Attendance Marking Table -->
+{% if selected_class %}
+    {% if students and students|length > 0 %}
+        <form method="POST" action="{{ url_for('mark_attendance') }}" id="attendanceForm">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="attendance_date" value="{{ selected_date }}">
+            <input type="hidden" name="class_name" value="{{ selected_class }}">
+            <input type="hidden" name="section" value="{{ selected_section }}">
+
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <h2 class="card-title">{{ selected_class }} {% if selected_section %}({{ selected_section }}){% endif %}</h2>
+                        <span class="card-subtitle">Recording for <strong>{{ selected_date }}</strong> • {{ students|length }} Students</span>
+                    </div>
+
+                    <!-- Quick Bulk Actions & Live Counters -->
+                    <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                        <div style="display: flex; gap: 0.5rem; font-size: 0.8rem; font-weight: 600; background: #f8fafc; padding: 0.35rem 0.65rem; border-radius: var(--radius-md); border: 1px solid var(--color-border);">
+                            <span style="color: #10b981;">Present: <span id="selectedPresentCount">0</span></span>
+                            <span style="color: #ef4444;">Absent: <span id="selectedAbsentCount">0</span></span>
+                            <span style="color: #f59e0b;">Late: <span id="selectedLateCount">0</span></span>
+                        </div>
+                        <button type="button" id="markAllPresentBtn" class="btn btn-sm btn-secondary">
+                            ⚡ Mark All Present
+                        </button>
+                        <button type="button" id="markAllAbsentBtn" class="btn btn-sm btn-secondary">
+                            Mark All Absent
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card-body" style="padding: 0;">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 120px;">Student ID</th>
+                                    <th>Student Name</th>
+                                    <th>Section</th>
+                                    <th>Mark Status</th>
+                                    <th>Remarks / Note</th>
+                                    <th>Prior Record</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for s in students %}
+                                    {% set existing = existing_records.get(s.id) %}
+                                    <tr>
+                                        <td><strong>{{ s.student_id }}</strong></td>
+                                        <td>
+                                            <span style="font-weight: 600;">{{ s.name }}</span>
+                                        </td>
+                                        <td><span class="badge badge-inactive">{{ s.section }}</span></td>
+                                        <td>
+                                            <div class="attendance-picker">
+                                                <input 
+                                                    type="radio" 
+                                                    id="p_{{ s.id }}" 
+                                                    name="status_{{ s.id }}" 
+                                                    value="Present"
+                                                    {% if existing and existing.status == 'Present' %}checked
+                                                    {% elif not existing %}checked{% endif %}
+                                                >
+                                                <label for="p_{{ s.id }}">Present</label>
+
+                                                <input 
+                                                    type="radio" 
+                                                    id="a_{{ s.id }}" 
+                                                    name="status_{{ s.id }}" 
+                                                    value="Absent"
+                                                    {% if existing and existing.status == 'Absent' %}checked{% endif %}
+                                                >
+                                                <label for="a_{{ s.id }}">Absent</label>
+
+                                                <input 
+                                                    type="radio" 
+                                                    id="l_{{ s.id }}" 
+                                                    name="status_{{ s.id }}" 
+                                                    value="Late"
+                                                    {% if existing and existing.status == 'Late' %}checked{% endif %}
+                                                >
+                                                <label for="l_{{ s.id }}">Late</label>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <input 
+                                                type="text" 
+                                                name="notes_{{ s.id }}" 
+                                                class="form-control" 
+                                                style="padding: 0.35rem 0.6rem; font-size: 0.8rem;" 
+                                                placeholder="Optional notes..."
+                                                value="{{ existing.notes if existing else '' }}"
+                                            >
+                                        </td>
+                                        <td>
+                                            {% if existing %}
+                                                <span class="badge badge-active" style="font-size: 0.7rem;">
+                                                    Updated: {{ existing.status }}
+                                                </span>
+                                            {% else %}
+                                                <span style="color: #94a3b8; font-size: 0.75rem;">New Entry</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card-header" style="justify-content: flex-end; background-color: #f8fafc;">
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary btn-lg" style="margin-left: 0.75rem;">
+                        💾 Save Attendance Records
+                    </button>
+                </div>
+            </div>
+        </form>
+    {% else %}
+        <div class="card">
+            <div class="card-body">
+                <div class="empty-state">
+                    <div class="empty-state-icon">👥</div>
+                    <h3 class="empty-state-title">No Students in Selected Cohort</h3>
+                    <p class="empty-state-text">There are no active students enrolled in {{ selected_class }}. Add students to begin recording attendance.</p>
+                    <a href="{{ url_for('add_student') }}" class="btn btn-primary">Enroll Students</a>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% else %}
+    <div class="card">
+        <div class="card-body">
+            <div class="empty-state">
+                <div class="empty-state-icon">📝</div>
+                <h3 class="empty-state-title">Select a Cohort to Begin</h3>
+                <p class="empty-state-text">Choose the attendance date and class from the dropdown above to load the student attendance roster.</p>
+            </div>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/attendance.js') }}"></script>
+{% endblock %}

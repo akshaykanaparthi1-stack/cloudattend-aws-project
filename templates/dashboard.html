@@ -1,0 +1,260 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+{% block topbar_title %}Enterprise Attendance Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Executive Dashboard</h1>
+        <p class="page-subtitle">Real-time attendance metrics, classroom health, and trend analytics</p>
+    </div>
+    <div style="display: flex; gap: 0.75rem;">
+        <a href="{{ url_for('reports') }}" class="btn btn-secondary">
+            <span>📄 View Reports</span>
+        </a>
+        <a href="{{ url_for('mark_attendance') }}" class="btn btn-primary">
+            <span>✏️ Mark Attendance</span>
+        </a>
+    </div>
+</div>
+
+<!-- Key Performance Indicators (Stats Cards) -->
+<div class="stats-grid">
+    <div class="stat-card primary">
+        <div class="stat-content">
+            <span class="stat-label">Total Enrolled</span>
+            <div class="stat-value">{{ total_students }}</div>
+            <span class="stat-desc">Across {{ classes_count }} cloud courses</span>
+        </div>
+        <div class="stat-icon">👥</div>
+    </div>
+
+    <div class="stat-card success">
+        <div class="stat-content">
+            <span class="stat-label">Present Today</span>
+            <div class="stat-value">{{ today_present }}</div>
+            <span class="stat-desc">
+                {% if today_marked > 0 %}
+                    {{ today_percentage }}% of {{ today_marked }} marked
+                {% else %}
+                    No sessions taken today
+                {% endif %}
+            </span>
+        </div>
+        <div class="stat-icon">✅</div>
+    </div>
+
+    <div class="stat-card danger">
+        <div class="stat-content">
+            <span class="stat-label">Absent Today</span>
+            <div class="stat-value">{{ today_absent }}</div>
+            <span class="stat-desc">Requires follow-up</span>
+        </div>
+        <div class="stat-icon">❌</div>
+    </div>
+
+    <div class="stat-card warning">
+        <div class="stat-content">
+            <span class="stat-label">Late Today</span>
+            <div class="stat-value">{{ today_late }}</div>
+            <span class="stat-desc">Tardy arrivals</span>
+        </div>
+        <div class="stat-icon">⏰</div>
+    </div>
+
+    <div class="stat-card purple">
+        <div class="stat-content">
+            <span class="stat-label">Overall Rate</span>
+            <div class="stat-value">{{ overall_percentage }}%</div>
+            <span class="stat-desc">Lifetime cumulative average</span>
+        </div>
+        <div class="stat-icon">📈</div>
+    </div>
+</div>
+
+<!-- Main Dashboard Grid -->
+<div class="dashboard-grid">
+    <!-- Left Column: Trend & Class Performance -->
+    <div class="left-col">
+        <!-- 7-Day Trend Chart -->
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <h2 class="card-title">7-Day Attendance Trend</h2>
+                    <span class="card-subtitle">Daily count of Present, Absent, and Late students</span>
+                </div>
+                <div style="display: flex; gap: 0.75rem; font-size: 0.75rem; font-weight: 600;">
+                    <span style="color: #10b981;">● Present</span>
+                    <span style="color: #ef4444;">● Absent</span>
+                    <span style="color: #f59e0b;">● Late</span>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if trend_data and trend_data|length > 0 %}
+                    <div class="chart-container">
+                        <canvas id="trendChartCanvas" class="canvas-chart"></canvas>
+                    </div>
+                {% else %}
+                    <div class="empty-state" style="padding: 2rem 1rem;">
+                        <div class="empty-state-icon">📊</div>
+                        <h3 class="empty-state-title">No Historical Trend Data</h3>
+                        <p class="empty-state-text">Start taking attendance to visualize multi-day patterns.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Class Breakdown Table -->
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <h2 class="card-title">Classroom Attendance Status (Today)</h2>
+                    <span class="card-subtitle">Performance breakdown by cohort</span>
+                </div>
+                <span class="badge badge-active">{{ class_summary|length }} Cohorts</span>
+            </div>
+            <div class="card-body" style="padding: 0;">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Cohort / Class</th>
+                                <th>Enrolled</th>
+                                <th>Present</th>
+                                <th>Absent</th>
+                                <th>Late</th>
+                                <th>Today's Rate</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for c in class_summary %}
+                                <tr>
+                                    <td><strong>{{ c.class_name }}</strong></td>
+                                    <td>{{ c.total_students }}</td>
+                                    <td><span class="badge badge-present">{{ c.present }}</span></td>
+                                    <td><span class="badge badge-absent">{{ c.absent }}</span></td>
+                                    <td><span class="badge badge-late">{{ c.late }}</span></td>
+                                    <td>
+                                        {% if c.marked > 0 %}
+                                            <strong>{{ c.percentage }}%</strong>
+                                        {% else %}
+                                            <span style="color: #94a3b8; font-style: italic;">Not marked</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('mark_attendance', class_name=c.class_name, attendance_date=today_str) }}" class="btn btn-sm btn-secondary">
+                                            Mark / Update
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="7" style="text-align: center; color: #94a3b8; padding: 2rem;">
+                                        No active classes found.
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Distribution & Activity Feed -->
+    <div class="right-col">
+        <!-- Distribution Donut Chart -->
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <h2 class="card-title">Today's Distribution</h2>
+                    <span class="card-subtitle">Ratio of student statuses</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="chart-container" style="height: 220px;">
+                    <canvas id="donutChartCanvas" class="canvas-chart"></canvas>
+                </div>
+                <div style="display: flex; justify-content: space-around; margin-top: 1rem; border-top: 1px solid var(--color-border); padding-top: 1rem; font-size: 0.8rem;">
+                    <div style="text-align: center;">
+                        <span style="color: #10b981; font-weight: 700; font-size: 1.1rem;">{{ today_present }}</span>
+                        <div style="color: #64748b;">Present</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <span style="color: #ef4444; font-weight: 700; font-size: 1.1rem;">{{ today_absent }}</span>
+                        <div style="color: #64748b;">Absent</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <span style="color: #f59e0b; font-weight: 700; font-size: 1.1rem;">{{ today_late }}</span>
+                        <div style="color: #64748b;">Late</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity Feed -->
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <h2 class="card-title">Recent Activity</h2>
+                    <span class="card-subtitle">Latest attendance logs</span>
+                </div>
+            </div>
+            <div class="card-body" style="padding: 0.75rem 1.25rem;">
+                {% if recent_activity and recent_activity|length > 0 %}
+                    <ul style="list-style: none;">
+                        {% for act in recent_activity %}
+                            <li style="padding: 0.75rem 0; border-bottom: 1px solid var(--color-border); display: flex; align-items: center; justify-content: space-between;">
+                                <div>
+                                    <div style="font-weight: 600; font-size: 0.85rem;">{{ act.student_name }}</div>
+                                    <div style="font-size: 0.72rem; color: #64748b;">{{ act.student_id }} • {{ act.class_name }}</div>
+                                </div>
+                                <div style="text-align: right;">
+                                    {% if act.status == 'Present' %}
+                                        <span class="badge badge-present">Present</span>
+                                    {% elif act.status == 'Absent' %}
+                                        <span class="badge badge-absent">Absent</span>
+                                    {% else %}
+                                        <span class="badge badge-late">Late</span>
+                                    {% endif %}
+                                    <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 2px;">{{ act.attendance_date }}</div>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <div class="empty-state" style="padding: 1.5rem 0.5rem;">
+                        <p class="empty-state-text" style="margin-bottom: 0;">No attendance records entered yet.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Pass Python data safely to JavaScript charts
+    window._cachedTrendData = {{ trend_data|tojson }};
+    window._cachedDonutData = {
+        present: {{ today_present }},
+        absent: {{ today_absent }},
+        late: {{ today_late }}
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+        if (window._cachedTrendData && window._cachedTrendData.length > 0) {
+            renderAttendanceTrendChart('trendChartCanvas', window._cachedTrendData);
+        }
+        renderDonutChart(
+            'donutChartCanvas',
+            window._cachedDonutData.present,
+            window._cachedDonutData.absent,
+            window._cachedDonutData.late
+        );
+    });
+</script>
+{% endblock %}
