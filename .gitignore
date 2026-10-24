@@ -9,17 +9,29 @@ venv/
 ENV/
 .venv/
 
-# Environment secrets (NEVER commit real keys)
+# Environment secrets & config (NEVER commit real keys)
 .env
+.env.*
+!.env.example
 
-# SQLite Databases & persistent state
+# Databases & persistent SQLite state
 *.db
 *.sqlite
 *.sqlite3
-instance/
+instance/*
 !instance/.gitkeep
 
-# Pytest & Coverage
+# AWS Keys, Certificates & Credentials
+*.pem
+*.key
+*.crt
+*.cer
+
+# Server & application logs
+*.log
+logs/
+
+# Pytest & Test coverage
 .pytest_cache/
 .coverage
 htmlcov/

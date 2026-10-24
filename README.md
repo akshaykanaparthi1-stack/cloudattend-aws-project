@@ -136,8 +136,8 @@ Follow these step-by-step instructions to run CloudAttend locally on Windows, ma
 
 ### Step 1: Clone the Repository & Enter Directory
 ```bash
-git clone https://github.com/your-username/cloudattend.git
-cd cloudattend
+git clone https://github.com/akshaykanaparthi1-stack/cloudattend-aws-project.git
+cd cloudattend-aws-project
 ```
 
 ### Step 2: Create and Activate a Python Virtual Environment
@@ -304,7 +304,7 @@ nginx -v
 ```bash
 # 1. Clone repository into home directory
 cd /home/ubuntu
-git clone https://github.com/your-username/cloudattend.git
+git clone https://github.com/akshaykanaparthi1-stack/cloudattend-aws-project.git cloudattend
 cd cloudattend
 
 # 2. Create and activate a dedicated virtual environment
