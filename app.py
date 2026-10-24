@@ -70,9 +70,29 @@ def create_app(config_name=None):
     @app.context_processor
     def inject_helpers():
         """Inject useful helper variables and functions into templates."""
+        user = session.get("user")
+        if user and isinstance(user, dict) and "id" in user:
+            try:
+                db = database.get_db()
+                db_user = db.execute(
+                    "SELECT id, username, full_name, role, email FROM users WHERE id = ?",
+                    (user["id"],)
+                ).fetchone()
+                if db_user:
+                    user = {
+                        "id": db_user["id"],
+                        "username": db_user["username"],
+                        "full_name": db_user["full_name"],
+                        "role": db_user["role"],
+                        "email": db_user["email"],
+                    }
+                    session["user"] = user
+            except Exception:
+                pass
+
         return {
             "csrf_token": lambda: session.get("csrf_token", ""),
-            "current_user": session.get("user"),
+            "current_user": user,
             "today_date": date.today().isoformat(),
             "app_name": "CloudAttend",
         }

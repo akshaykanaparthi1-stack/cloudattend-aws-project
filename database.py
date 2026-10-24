@@ -75,7 +75,7 @@ def seed_db(db_conn=None):
     # 1. Seed Administrator
     admin_user = current_app.config.get("DEFAULT_ADMIN_USER", "admin")
     admin_pass = current_app.config.get("DEFAULT_ADMIN_PASS", "Admin@Cloud2026")
-    admin_name = current_app.config.get("DEFAULT_ADMIN_NAME", "System Administrator")
+    admin_name = current_app.config.get("DEFAULT_ADMIN_NAME", "Admin")
     admin_email = current_app.config.get("DEFAULT_ADMIN_EMAIL", "admin@cloudattend.internal")
 
     existing_admin = db.execute(
